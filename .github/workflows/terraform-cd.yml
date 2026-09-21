@@ -1,11 +1,7 @@
-name: Terraform CI
+name: Terraform CD
 
 on:
   push:
-    branches:
-      - main
-
-  pull_request:
     branches:
       - main
 
@@ -14,9 +10,10 @@ permissions:
   id-token: write
 
 jobs:
-  terraform:
-    name: Terraform
+  terraform-apply:
+    name: Terraform Apply
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout repository
@@ -33,17 +30,8 @@ jobs:
           role-to-assume: arn:aws:iam::312977845460:role/GitHubActions-Terraform-Role
           aws-region: eu-north-1
 
-      - name: Check AWS identity
-        run: aws sts get-caller-identity --query Account --output text
-
-      - name: Terraform Format Check
-        run: terraform fmt -check -recursive
-
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: Terraform Plan
-        run: terraform plan
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
