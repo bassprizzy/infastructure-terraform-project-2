@@ -6,6 +6,11 @@ on:
       - Terraform CI
     types:
       - completed
+concurrency: # controls how many GitHub Actions runs are allowed to work on the same thing at the same time. CD is the important place to prevent simultaneous deployments
+  group: terraform-production
+  cancel-in-progress: false # means don't cancel an existing deployment
+
+
 
 permissions:
   contents: read
@@ -35,7 +40,7 @@ jobs:
           terraform_version: 1.15.8
 
       - name: Download Terraform Plan
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4 #this store artefact file of tfplan its download it and store
         with:
           name: terraform-plan
           path: .
