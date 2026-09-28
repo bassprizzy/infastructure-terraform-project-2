@@ -1,0 +1,23 @@
+# keep build context small &  secret out of image layer
+.git
+.github
+.gitignore
+
+#installl/build artifact 
+Node_modules/
+dist
+
+
+# local python cruft
+_pycache_/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv
+
+# Test are not needed in the runtime image (they run in CI)
+tests/

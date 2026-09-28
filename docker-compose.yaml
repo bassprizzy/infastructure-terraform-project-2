@@ -1,0 +1,30 @@
+services:
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.75
+
+
+  backend:
+    build: ./backend/python-backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://taskapp_user:taskapp_password@database:5432/taskapp
+
+  database:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: taskapp
+      POSTGRES_USER: taskapp_user
+      POSTGRES_PASSWORD: taskapp_password
