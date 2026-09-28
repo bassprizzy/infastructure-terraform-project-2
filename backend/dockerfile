@@ -1,0 +1,84 @@
+# ==========================================
+# STAGE 1: BUILD
+# ==========================================
+
+# Use Python 3.11 slim as the builder image
+FROM python:3.11-slim AS builder
+
+# Set Python environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Set the working directory
+WORKDIR /app
+
+# Create a Python virtual environment
+RUN python -m venv /opt/venv
+
+# Add the virtual environment to PATH
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy the Python dependency file
+COPY requirements.txt .
+
+# Upgrade pip and install application dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+
+# ==========================================
+# STAGE 2: RUNTIME
+# ==========================================
+
+# Start with a clean Python runtime image
+FROM python:3.11-slim AS runtime
+
+# Set Python environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PATH="/opt/venv/bin:$PATH"
+
+# Create a non-root user
+RUN useradd --create-home --uid 10001 appuser
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the virtual environment from the builder stage
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy the application code
+COPY app/ ./app
+
+# Copy database migrations
+COPY migrations/ ./migrations
+
+# Copy Alembic configuration and application entry point
+COPY alembic.ini run.py ./
+
+# Copy the Docker entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Give the application user ownership of the application files
+RUN chown -R appuser:appuser /app
+
+# Run the application as the non-root user
+USER appuser
+
+# Document the port used by the application
+EXPOSE 8000
+
+# Check whether the application is healthy
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=4)" || exit 1
+
+# Run the entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# Start the application with Gunicorn
+CMD ["gunicorn", "--workers", "3", "--bind", "0.0.0.0:8000", "run:app"]

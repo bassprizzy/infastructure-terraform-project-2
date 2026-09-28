@@ -1,3 +1,18 @@
-node_modules
-dist
+# keep build context small &  secret out of image layer
 .git
+.github
+.gitignor
+
+#installl/build artifact 
+Node_modules/
+dist
+
+VITE_API_URL=/api
+# via the dockerfiles ARG, so the SPA calls some-origin "/api" through the Nginx proxy
+.env
+.*env.*
+!.env.example
+
+# Docs / editor / coverage
+*.md/
+coverage/
