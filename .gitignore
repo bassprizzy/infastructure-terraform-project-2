@@ -7,3 +7,8 @@ crash.*.log
 *.tfplan.*
 *.pem
 *.rfplan
+node_modules/
+.env
+*.tfstate
+*.tfstate.*
+backend.tfplan
