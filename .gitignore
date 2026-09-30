@@ -1,11 +1,22 @@
+# Terraform
 .terraform/
 *.tfstate
 *.tfstate.*
-crash.log
-crash.*.log
 *.tfplan
-*.tfplan.*
-*.pem
+crash.log
+
+# Variables
+*.tfvars
+
+# Environment files
+.env
+
+# Node.js
+node_modules/
+
+# Frontend/Backend folders
+frontend/
+backend/
 *.rfplan
 node_modules/
 .env
